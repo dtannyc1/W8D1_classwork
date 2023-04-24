@@ -2,6 +2,7 @@ require 'active_support'
 require 'active_support/core_ext'
 require 'erb'
 require_relative './session'
+require 'active_support/inflector'
 
 class ControllerBase
   attr_reader :req, :res, :params
@@ -40,6 +41,12 @@ class ControllerBase
   # use ERB and binding to evaluate templates
   # pass the rendered html to render_content
   def render(template_name)
+    controller_name = ActiveSupport::Inflector.underscore(self.class.to_s)
+    file_name = File.dirname(__FILE__)[0..-4] + "views/#{controller_name}/#{template_name}.html.erb"
+    template = File.new(file_name)
+    erb_template = ERB.new(template.read)
+    output = erb_template.result(binding)
+    render_content(output, 'text/html')
   end
 
   # method exposing a `Session` object
